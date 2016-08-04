@@ -38,13 +38,14 @@ def user_create(context, data_dict):
 
     user = model_save.user_dict_save(data, context)
 
+    session.flush()
+
     loopback_user_create({
-       'email': data['email'],
-       'password': data['password'],
-       'apikey': user.apikey
+        'email': data['email'],
+        'password': data['password'],
+        'apikey': user.apikey
     })
 
-    session.flush()
 
     activity_create_context = {
         'model': model,
