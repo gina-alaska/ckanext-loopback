@@ -38,6 +38,12 @@ def user_create(context, data_dict):
 
     user = model_save.user_dict_save(data, context)
 
+    loopback_user_create({
+       'email': data['email'],
+       'password': data['password'],
+       'apikey': user.apikey
+    })
+
     session.flush()
 
     activity_create_context = {
@@ -66,12 +72,6 @@ def user_create(context, data_dict):
     context['id'] = user.id
 
     model.Dashboard.get(user.id)
-
-    loopback_user_create({
-       'email': data['email'],
-       'password': data['password'],
-       'apikey': user.apikey
-    })
 
     log.debug('Created user {name}'.format(name=user.name))
     return user_dict
