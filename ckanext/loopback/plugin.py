@@ -19,7 +19,7 @@ def loopback_user_create(credentials):
     response = requests.post(loopback_user_url, data = credentials)
     response.raise_for_status()
 
-# Taken from CKAN core.
+# Adapted from CKAN core.
 def user_create(context, data_dict):
     model = context['model']
     schema = context.get('schema') or ckan.logic.schema.default_user_schema()
@@ -41,11 +41,11 @@ def user_create(context, data_dict):
     session.flush()
 
     loopback_user_create({
+        'username': data['name'],
         'email': data['email'],
         'password': data['password'],
         'apikey': user.apikey
     })
-
 
     activity_create_context = {
         'model': model,
