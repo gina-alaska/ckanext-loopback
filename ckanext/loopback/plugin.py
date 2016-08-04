@@ -16,7 +16,8 @@ ValidationError = logic.ValidationError
 
 def loopback_user_create(credentials):
     loopback_user_url = config.get('loopback.user_url', None)
-    requests.post(loopback_user_url, data = credentials)
+    response = requests.post(loopback_user_url, data = credentials)
+    response.raise_for_status()
 
 # Taken from CKAN core.
 def user_create(context, data_dict):
