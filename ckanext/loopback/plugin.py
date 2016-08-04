@@ -1,6 +1,7 @@
 import logging
 import requests
 
+from pylons import config
 import ckan.plugins as plugins
 import ckan.logic as logic
 import ckan.lib.navl.dictization_functions
@@ -14,7 +15,8 @@ _check_access = logic.check_access
 ValidationError = logic.ValidationError
 
 def loopback_user_create(credentials):
-    requests.post('http://137.229.94.246:3000/api/MobileUsers', data = credentials)
+    loopback_user_url = config.get('loopback.user_url', None)
+    requests.post(loopback_user_url, data = credentials)
 
 # Taken from CKAN core.
 def user_create(context, data_dict):
