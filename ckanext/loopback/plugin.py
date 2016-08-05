@@ -28,6 +28,7 @@ def loopback_login(credentials):
         'username': credentials['username'],
         'password': credentials['password']
     })
+    response.raise_for_status()
     pylons.session['loopback_token'] = json.loads(response.text)['id']
     pylons.session.save()
 
