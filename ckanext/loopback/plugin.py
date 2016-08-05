@@ -1,7 +1,7 @@
 import logging
 import requests
-
-from pylons import config
+import pylons
+import json
 import ckan.plugins as plugins
 import ckan.logic as logic
 import ckan.lib.navl.dictization_functions
@@ -11,13 +11,25 @@ import ckan.lib.dictization.model_save as model_save
 log = logging.getLogger(__name__)
 
 _validate = ckan.lib.navl.dictization_functions.validate
+_get_action = logic.get_action
 _check_access = logic.check_access
 ValidationError = logic.ValidationError
+_get_or_bust = logic.get_or_bust
 
 def loopback_user_create(credentials):
-    loopback_user_url = config.get('loopback.user_url', None)
+    loopback_user_url = pylons.config.get('ckan.loopback.user_url')
     response = requests.post(loopback_user_url, data = credentials)
     response.raise_for_status()
+    loopback_login(credentials)
+
+def loopback_login(credentials):
+    loopback_user_url = pylons.config.get('ckan.loopback.login_url')
+    response = requests.post(loopback_user_url, data = {
+        'username': credentials['username'],
+        'password': credentials['password']
+    })
+    pylons.session['loopback_token'] = json.loads(response.text)['id']
+    pylons.session.save()
 
 # Adapted from CKAN core.
 def user_create(context, data_dict):
@@ -41,10 +53,11 @@ def user_create(context, data_dict):
     session.flush()
 
     loopback_user_create({
-        'username': data['name'],
-        'email': data['email'],
-        'password': data['password'],
-        'apikey': user.apikey
+        'id': user.id,
+        'username': user.name,
+        'email': user.email,
+        'apikey': user.apikey,
+        'password': data['password']
     })
 
     activity_create_context = {
@@ -81,4 +94,6 @@ class LoopbackPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
 
     def get_actions(self):
-        return {'user_create': user_create}
+        return {
+            'user_create': user_create
+        }
