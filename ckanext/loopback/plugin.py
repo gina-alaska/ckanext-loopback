@@ -18,7 +18,6 @@ _group_or_org_create = logic.action.create._group_or_org_create
 _group_or_org_member_create = logic.action.create._group_or_org_member_create
 
 def loopback_login():
-    # Get the base URL for the LoopBack user model.
     loopback_user_url = pylons.config.get('ckan.loopback.login_url')
 
     response = requests.post(loopback_user_url, data = {
@@ -69,7 +68,7 @@ def loopback_group_create(group_info):
     response.raise_for_status()
     log.debug('LoopBack group created: {}'.format(group_info['id']))
 
-# Copy and pasted from CKAN core except for LoopBack parts.
+# Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def user_create(context, data_dict):
     model = context['model']
     schema = context.get('schema') or ckan.logic.schema.default_user_schema()
@@ -128,7 +127,7 @@ def user_create(context, data_dict):
     log.debug('CKAN user created: {}'.format(user.name))
     return user_dict
 
-# Copy and pasted from CKAN core except for LoopBack parts.
+# Taken from ckan/logic/action/update.py and adapted to add LoopBack parts.
 def user_update(context, data_dict):
     model = context['model']
     user = context['user']
@@ -184,6 +183,7 @@ def user_update(context, data_dict):
     log.debug('CKAN user updated: {}'.format(user.name))
     return model_dictize.user_dictize(user, context)
 
+# Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_create(context, data_dict):
     if pylons.session.get('loopback_token') is None:
         loopback_login()
@@ -200,6 +200,7 @@ def organization_create(context, data_dict):
 
     return organization
 
+# Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_member_create(context, data_dict):
     if pylons.session.get('loopback_token') is None:
         loopback_login()
