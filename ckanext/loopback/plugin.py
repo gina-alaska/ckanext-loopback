@@ -18,9 +18,9 @@ _group_or_org_create = logic.action.create._group_or_org_create
 _group_or_org_member_create = logic.action.create._group_or_org_member_create
 
 def loopback_login():
-    loopback_user_url = pylons.config.get('ckan.loopback.login_url')
+    loopback_login_url = pylons.config.get('ckan.loopback.login_url')
 
-    response = requests.post(loopback_user_url, data = {
+    response = requests.post(loopback_login_url, data = {
         'username': pylons.config.get('ckan.loopback.username'),
         'password': pylons.config.get('ckan.loopback.password')
     })
