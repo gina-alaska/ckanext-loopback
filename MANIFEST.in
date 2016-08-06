@@ -1,1 +1,2 @@
+include README.md
 recursive-include ckanext/loopback *.html *.json *.js *.less *.css *.mo
