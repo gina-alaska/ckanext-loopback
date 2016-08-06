@@ -14,6 +14,8 @@ _get_action = logic.get_action
 _check_access = logic.check_access
 ValidationError = logic.ValidationError
 _get_or_bust = logic.get_or_bust
+_group_or_org_create = logic.action.create._group_or_org_create
+_group_or_org_member_create = logic.action.create._group_or_org_member_create
 
 def loopback_login():
     # Get the base URL for the LoopBack user model.
@@ -42,7 +44,7 @@ def loopback_user_create(user_info):
     request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
     response = requests.post(request_url, data = user_info)
     response.raise_for_status()
-    log.debug('LoopBack user created: {}'.format(user_info['username']))
+    log.debug('LoopBack user created: {}'.format(user_info['id']))
 
 def loopback_user_update(id, user_info):
     if pylons.session.get('loopback_token') is None:
@@ -54,7 +56,18 @@ def loopback_user_update(id, user_info):
     request_url = '{}?access_token={}'.format(loopback_user_id_url, loopback_token)
     response = requests.put(request_url, data = user_info)
     response.raise_for_status()
-    log.debug('LoopBack user updated: {}'.format(user_info['username']))
+    log.debug('LoopBack user updated: {}'.format(id))
+
+def loopback_group_create(group_info):
+    if pylons.session.get('loopback_token') is None:
+        loopback_login()
+
+    loopback_user_url = pylons.config.get('ckan.loopback.group_url')
+    loopback_token = pylons.session.get('loopback_token')
+    request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
+    response = requests.post(request_url, data = group_info)
+    response.raise_for_status()
+    log.debug('LoopBack group created: {}'.format(group_info['id']))
 
 # Copy and pasted from CKAN core except for LoopBack parts.
 def user_create(context, data_dict):
@@ -171,11 +184,42 @@ def user_update(context, data_dict):
     log.debug('CKAN user updated: {}'.format(user.name))
     return model_dictize.user_dictize(user, context)
 
+def organization_create(context, data_dict):
+    if pylons.session.get('loopback_token') is None:
+        loopback_login()
+
+    data_dict.setdefault('type', 'organization')
+    _check_access('organization_create', context, data_dict)
+
+    organization = _group_or_org_create(context, data_dict, is_org=True)
+
+    loopback_group_create({
+      'id': organization['id'],
+      'name': organization['title']
+    })
+
+    return organization
+
+def organization_member_create(context, data_dict):
+    if pylons.session.get('loopback_token') is None:
+        loopback_login()
+
+    _check_access('organization_member_create', context, data_dict)
+    member = _group_or_org_member_create(context, data_dict, is_org=True)
+
+    loopback_user_update(member['table_id'], {
+      'groupId': context['group'].id
+    })
+
+    return member
+
 class LoopbackPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
 
     def get_actions(self):
         return {
             'user_create': user_create,
-            'user_update': user_update
+            'user_update': user_update,
+            'organization_create': organization_create,
+            'organization_member_create': organization_member_create
         }
