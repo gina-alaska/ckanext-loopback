@@ -26,3 +26,11 @@ ckan.loopback.user_url = # for example: https://loopback.example.com/api/MobileU
 ckan.loopback.group_url = # for example: https://loopback.example.com/api/Groups
 
 ```
+## Run
+
+Make sure to serve CKAN using the correct configuration file (`production.ini` in this case):
+
+```
+. /usr/lib/ckan/default/bin/activate
+paster serve /etc/ckan/default/production.ini
+```
