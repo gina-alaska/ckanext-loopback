@@ -27,42 +27,39 @@ def loopback_login():
 
     response.raise_for_status()
 
-    # TODO: Find a better place to store the LoopBack token.
-    # No need to have a separate LoopBack token for each browser session.
-    pylons.session['loopback_token'] = json.loads(response.text)['id']
-    pylons.session.save()
+    pylons.config['loopback_token'] = json.loads(response.text)['id']
     log.debug('Logged into LoopBack with access token: {}'
-        .format(pylons.session.get('loopback_token')))
+        .format(pylons.config.get('loopback_token')))
 
 def loopback_user_create(user_info):
-    if pylons.session.get('loopback_token') is None:
+    if pylons.config.get('loopback_token') is None:
         loopback_login()
 
     loopback_user_url = pylons.config.get('ckan.loopback.user_url')
-    loopback_token = pylons.session.get('loopback_token')
+    loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
     response = requests.post(request_url, data = user_info)
     response.raise_for_status()
     log.debug('LoopBack user created: {}'.format(user_info['id']))
 
 def loopback_user_update(id, user_info):
-    if pylons.session.get('loopback_token') is None:
+    if pylons.config.get('loopback_token') is None:
         loopback_login()
 
     loopback_user_url = pylons.config.get('ckan.loopback.user_url')
     loopback_user_id_url = '{}/{}'.format(loopback_user_url, id)
-    loopback_token = pylons.session.get('loopback_token')
+    loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_id_url, loopback_token)
     response = requests.put(request_url, data = user_info)
     response.raise_for_status()
     log.debug('LoopBack user updated: {}'.format(id))
 
 def loopback_group_create(group_info):
-    if pylons.session.get('loopback_token') is None:
+    if pylons.config.get('loopback_token') is None:
         loopback_login()
 
     loopback_user_url = pylons.config.get('ckan.loopback.group_url')
-    loopback_token = pylons.session.get('loopback_token')
+    loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
     response = requests.post(request_url, data = group_info)
     response.raise_for_status()
@@ -185,7 +182,7 @@ def user_update(context, data_dict):
 
 # Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_create(context, data_dict):
-    if pylons.session.get('loopback_token') is None:
+    if pylons.config.get('loopback_token') is None:
         loopback_login()
 
     data_dict.setdefault('type', 'organization')
@@ -202,7 +199,7 @@ def organization_create(context, data_dict):
 
 # Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_member_create(context, data_dict):
-    if pylons.session.get('loopback_token') is None:
+    if pylons.config.get('loopback_token') is None:
         loopback_login()
 
     _check_access('organization_member_create', context, data_dict)
