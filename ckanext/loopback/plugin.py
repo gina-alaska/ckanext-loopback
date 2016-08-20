@@ -39,7 +39,12 @@ def loopback_user_create(user_info):
     loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
     response = requests.post(request_url, data = user_info)
-    response.raise_for_status()
+
+    if response.status_code == 401:
+        loopback_login()
+    else:
+        response.raise_for_status()
+
     log.debug('LoopBack user created: {}'.format(user_info['id']))
 
 def loopback_user_update(id, user_info):
@@ -51,7 +56,12 @@ def loopback_user_update(id, user_info):
     loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_id_url, loopback_token)
     response = requests.put(request_url, data = user_info)
-    response.raise_for_status()
+
+    if response.status_code == 401:
+        loopback_login()
+    else:
+        response.raise_for_status()
+
     log.debug('LoopBack user updated: {}'.format(id))
 
 def loopback_group_create(group_info):
@@ -62,7 +72,12 @@ def loopback_group_create(group_info):
     loopback_token = pylons.config.get('loopback_token')
     request_url = '{}?access_token={}'.format(loopback_user_url, loopback_token)
     response = requests.post(request_url, data = group_info)
-    response.raise_for_status()
+
+    if response.status_code == 401:
+        loopback_login()
+    else:
+        response.raise_for_status()
+
     log.debug('LoopBack group created: {}'.format(group_info['id']))
 
 # Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
