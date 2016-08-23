@@ -16,6 +16,7 @@ ValidationError = logic.ValidationError
 _get_or_bust = logic.get_or_bust
 _group_or_org_create = logic.action.create._group_or_org_create
 _group_or_org_member_create = logic.action.create._group_or_org_member_create
+_group_or_org_member_delete = logic.action.delete._group_or_org_member_delete
 
 def loopback_login():
     loopback_login_url = pylons.config.get('ckan.loopback.login_url')
@@ -197,9 +198,6 @@ def user_update(context, data_dict):
 
 # Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_create(context, data_dict):
-    if pylons.config.get('loopback_token') is None:
-        loopback_login()
-
     data_dict.setdefault('type', 'organization')
     _check_access('organization_create', context, data_dict)
 
@@ -214,9 +212,6 @@ def organization_create(context, data_dict):
 
 # Taken from ckan/logic/action/create.py and adapted to add LoopBack parts.
 def organization_member_create(context, data_dict):
-    if pylons.config.get('loopback_token') is None:
-        loopback_login()
-
     _check_access('organization_member_create', context, data_dict)
     member = _group_or_org_member_create(context, data_dict, is_org=True)
 
@@ -226,6 +221,18 @@ def organization_member_create(context, data_dict):
 
     return member
 
+# Taken from ckan/logic/action/delete.py and adapted to add LoopBack parts.
+def organization_member_delete(context, data_dict=None):
+    _check_access('organization_member_delete',context, data_dict)
+
+    loopback_user_info = {
+        'groupId': ''
+    }
+
+    loopback_user_update(data_dict['user_id'], loopback_user_info)
+
+    return _group_or_org_member_delete(context, data_dict)
+
 class LoopbackPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
 
@@ -234,5 +241,6 @@ class LoopbackPlugin(plugins.SingletonPlugin):
             'user_create': user_create,
             'user_update': user_update,
             'organization_create': organization_create,
-            'organization_member_create': organization_member_create
+            'organization_member_create': organization_member_create,
+            'organization_member_delete': organization_member_delete
         }
