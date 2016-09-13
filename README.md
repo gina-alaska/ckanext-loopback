@@ -6,6 +6,14 @@ This CKAN extension synchronizes CKAN user and organization create/update operat
 
 1. Clone this repository into `/usr/lib/ckan/default/src`.
 
+1. Install the extension into your Python virtual environment:
+
+   ```
+   . /usr/lib/ckan/default/bin/activate
+   cd ckanext-loopback
+   sudo python setup.py develop
+   ```
+
 1. Add `loopback` to the `ckan.plugins` line in `/etc/ckan/default/production.ini`. For example:
 
    ```
