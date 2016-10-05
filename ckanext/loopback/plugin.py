@@ -100,6 +100,9 @@ def user_create(context, data_dict):
 
     user = model_save.user_dict_save(data, context)
 
+    if user.email == pylons.config.get('ckan.loopback.email'):
+        raise ValidationError({'Email Address': ['Invalid email address.']})
+
     session.flush()
 
     loopback_user_create({
@@ -164,6 +167,9 @@ def user_update(context, data_dict):
         data['_password'] = data.pop('password_hash')
 
     user = model_save.user_dict_save(data, context)
+
+    if user.name == pylons.config.get('ckan.loopback.username'):
+        raise ValidationError({'Username': ['Invalid username.']})
 
     loopback_user_info = {
         'username': user.name,

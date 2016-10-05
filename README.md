@@ -25,8 +25,10 @@ This CKAN extension synchronizes CKAN user and organization create/update operat
 The following lines need to be added under the `[app:main]` section of `/etc/ckan/default/production.ini`:
 
 ```
+# LoopBack admin account credentials.
 ckan.loopback.username = username
 ckan.loopback.password = password
+ckan.loopback.email = email@address.com
 
 # Make sure to use HTTPS for all these URLs.
 ckan.loopback.login_url = # for example: https://loopback.example.com/api/MobileUsers/login
