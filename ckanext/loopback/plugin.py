@@ -26,7 +26,9 @@ def loopback_login():
         'password': pylons.config.get('ckan.loopback.password')
     })
 
-    response.raise_for_status()
+    if response.status_code != 200:
+        log.error('Problem logging into LoopBack.')
+        response.raise_for_status()
 
     pylons.config['loopback_token'] = json.loads(response.text)['id']
     log.debug('Logged into LoopBack with access token: {}'
@@ -44,9 +46,27 @@ def loopback_user_create(user_info):
     if response.status_code == 401:
         loopback_login()
     else:
+        log.error('Problem creating user in LoopBack with CKAN username: {}'.format(user_info['username']))
         response.raise_for_status()
 
     log.debug('LoopBack user created: {}'.format(user_info['id']))
+
+def loopback_user_get(id):
+    if pylons.config.get('loopback_token') is None:
+        loopback_login()
+
+    loopback_user_url = pylons.config.get('ckan.loopback.user_url')
+    loopback_user_id_url = '{}/{}'.format(loopback_user_url, id)
+    loopback_token = pylons.config.get('loopback_token')
+    request_url = '{}?access_token={}'.format(loopback_user_id_url, loopback_token)
+    response = requests.get(request_url)
+
+    if response.status_code == 401:
+        loopback_login()
+    else:
+        response.raise_for_status()
+
+    return response.text
 
 def loopback_user_update(id, user_info):
     if pylons.config.get('loopback_token') is None:
@@ -183,10 +203,11 @@ def user_update(context, data_dict):
     loopback_user_update(user.id, loopback_user_info)
 
     activity_dict = {
-            'user_id': user.id,
-            'object_id': user.id,
-            'activity_type': 'changed user',
-            }
+        'user_id': user.id,
+        'object_id': user.id,
+        'activity_type': 'changed user',
+    }
+
     activity_create_context = {
         'model': model,
         'user': user,
@@ -221,8 +242,11 @@ def organization_member_create(context, data_dict):
     _check_access('organization_member_create', context, data_dict)
     member = _group_or_org_member_create(context, data_dict, is_org=True)
 
+    groups = json.loads(loopback_user_get(member['table_id']))['groupId']
+    groups.append(context['group'].id)
+
     loopback_user_update(member['table_id'], {
-      'groupId': context['group'].id
+      'groupId': groups
     })
 
     return member
@@ -231,11 +255,12 @@ def organization_member_create(context, data_dict):
 def organization_member_delete(context, data_dict=None):
     _check_access('organization_member_delete',context, data_dict)
 
-    loopback_user_info = {
-        'groupId': ''
-    }
+    groups = json.loads(loopback_user_get(data_dict['user_id']))['groupId']
+    groups = [x for x in groups if x != data_dict['id']]
 
-    loopback_user_update(data_dict['user_id'], loopback_user_info)
+    loopback_user_update(data_dict['user_id'], {
+      'groupId': groups
+    })
 
     return _group_or_org_member_delete(context, data_dict)
 
