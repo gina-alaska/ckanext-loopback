@@ -243,10 +243,16 @@ def organization_member_create(context, data_dict):
     member = _group_or_org_member_create(context, data_dict, is_org=True)
 
     groups = json.loads(loopback_user_get(member['table_id']))['groupId']
+
+    if groups == None:
+      groups = []
+    else:
+      groups = [x for x in groups if x != context['group'].id]
+
     groups.append(context['group'].id)
 
     loopback_user_update(member['table_id'], {
-      'groupId': groups
+      'groupId': json.dumps(groups)
     })
 
     return member
@@ -259,7 +265,7 @@ def organization_member_delete(context, data_dict=None):
     groups = [x for x in groups if x != data_dict['id']]
 
     loopback_user_update(data_dict['user_id'], {
-      'groupId': groups
+      'groupId': json.dumps(groups)
     })
 
     return _group_or_org_member_delete(context, data_dict)
