@@ -46,7 +46,7 @@ def loopback_user_create(user_info):
     if response.status_code == 401:
         loopback_login()
     else:
-        log.error('Problem creating user in LoopBack with CKAN username: {}'.format(user_info['username']))
+        log.error('Problem creating user in LoopBack with CKAN ID: {}'.format(user_info['id']))
         response.raise_for_status()
 
     log.debug('LoopBack user created: {}'.format(user_info['id']))
@@ -64,6 +64,7 @@ def loopback_user_get(id):
     if response.status_code == 401:
         loopback_login()
     else:
+        log.error('Problem getting user info from LoopBack with CKAN ID: {}'.format(id))
         response.raise_for_status()
 
     return response.text
@@ -81,6 +82,7 @@ def loopback_user_update(id, user_info):
     if response.status_code == 401:
         loopback_login()
     else:
+        log.error('Problem updating user in LoopBack with CKAN ID: {}'.format(id))
         response.raise_for_status()
 
     log.debug('LoopBack user updated: {}'.format(id))
@@ -97,6 +99,7 @@ def loopback_group_create(group_info):
     if response.status_code == 401:
         loopback_login()
     else:
+        log.error('Problem creating group in LoopBack with CKAN organization ID: {}'.format(group_info['id']))
         response.raise_for_status()
 
     log.debug('LoopBack group created: {}'.format(group_info['id']))
