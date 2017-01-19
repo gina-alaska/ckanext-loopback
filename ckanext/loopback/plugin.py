@@ -109,7 +109,6 @@ def user_create(context, data_dict):
         'id': user.id,
         'username': user.name,
         'email': user.email,
-        'apikey': user.apikey,
         'password': data['password']
     })
 
@@ -173,8 +172,7 @@ def user_update(context, data_dict):
 
     loopback_user_info = {
         'username': user.name,
-        'email': user.email,
-        'apikey': user.apikey
+        'email': user.email
     }
 
     if 'password' in data:
